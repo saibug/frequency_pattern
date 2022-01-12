@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+
+
+import sys
+import time
+import argparse
+import configparser
+import collections
+from pygtail import Pygtail
+
+""" set variables """
+sys_exit_cri = 2
+sys_exit_warn = 1
+sys_exit_ok = 0
+
+""" configparser """
+parser = argparse.ArgumentParser()
+parser.add_argument('--logfile', '-l', required=True, help="path log file", type=str)
+parser.add_argument('--pattern', '-p', required=True, help="pattern to check", type=str)
+parser.add_argument('--critical', '-c', required=False, help="critical threshold", type=int)
+parser.add_argument('--warning', '-w', required=False, help="warning threshold", type=int)
+opt = parser.parse_args()
+
+
+def tail(filename):
+    blocks = []
+    for line in Pygtail(filename):
+        blocks.append(line)
+    reading_text = ''.join(reversed(blocks))
+    return '\n'.join(reading_text.splitlines())
+
+def search(filename=opt.logfile):
+    """ Calls function to tail file log """
+    output = tail(filename)
+    blocks = []
+    pattern = opt.pattern
+    count = 0
+    for line in output.strip().split('\n'):
+        blocks.append(line)
+
+    if output != "":
+        for line in blocks:
+            if pattern in line:
+                count +=1
+    else:
+        pass
+    return count
+
+def check_threshold():
+    """check the threshold and send output"""
+    values = search()
+    return values
+
+if __name__ == '__main__':
+    pattern_count = check_threshold()
+
+    try:
+        if int(pattern_count) >= opt.critical:
+            print(f'CRITICAL - number of occurences happened in logfile|{pattern_count}|{opt.pattern}|{opt.logfile}')
+            sys.exit(sys_exit_cri)
+
+        if int(pattern_count) >= opt.warning:
+            print(f'WARNING - number of occurences happened in logfile|{pattern_count}|{opt.pattern}|{opt.logfile}')
+            sys.exit(sys_exit_warn)
+
+        print(f'OK - number of occurences happened|{pattern_count}|{opt.pattern}|{opt.logfile}')
+        sys.exit(sys_exit_ok)
+    except Exception as e:
+        print(f'UNKNOWN - Fail to get occurences of pattern {e}')
+        sys.exit(sys_exit_cri)
