@@ -5,7 +5,6 @@ import sys
 import time
 import argparse
 import configparser
-import collections
 from pygtail import Pygtail
 
 """ set variables """
@@ -17,8 +16,8 @@ sys_exit_ok = 0
 parser = argparse.ArgumentParser()
 parser.add_argument('--logfile', '-l', required=True, help="path log file", type=str)
 parser.add_argument('--pattern', '-p', required=True, help="pattern to check", type=str)
-parser.add_argument('--critical', '-c', required=False, help="critical threshold", type=int)
-parser.add_argument('--warning', '-w', required=False, help="warning threshold", type=int)
+parser.add_argument('--critical', '-c', required=True, help="critical threshold", type=int)
+parser.add_argument('--warning', '-w', required=True, help="warning threshold", type=int)
 opt = parser.parse_args()
 
 
